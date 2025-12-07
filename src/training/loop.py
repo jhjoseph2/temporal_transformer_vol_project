@@ -16,17 +16,32 @@ def train_one_epoch(
     optimizer,
     loss_fn,
     device: str = "cpu",
+    clip_grad: float = 1.0 # <--- Added argument
 ) -> float:
     model.train()
     total_loss = 0.0
+    
     for x, y in dataloader:
         x = x.to(device)
         y = y.to(device)
 
         optimizer.zero_grad()
         preds = model(x)
+        
+        # Ensure target shape matches predictions [batch] vs [batch, 1]
+        if y.ndim > 1: y = y.squeeze(-1)
+        
         loss = loss_fn(preds, y)
+        
+        if torch.isnan(loss):
+            print("[WARNING] NaN loss detected! Skipping batch.")
+            continue
+            
         loss.backward()
+        
+        # Critical: Gradient Clipping
+        torch.nn.utils.clip_grad_norm_(model.parameters(), clip_grad)
+        
         optimizer.step()
 
         total_loss += loss.item() * x.size(0)

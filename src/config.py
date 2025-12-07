@@ -18,10 +18,11 @@ class ExperimentConfig:
 
     # training params (for Transformer)
     batch_size: int = 64
-    lr: float = 1e-3
-    weight_decay: float = 1e-4
+    lr: float = 1e-4
+    weight_decay: float = 1e-5
     max_epochs: int = 50
     device: str = "cuda"  # or "cpu"
+    clip_grad: float = 1.0
 
     # Model Architecture Switch
     # Options: 'sinusoidal', 'learned', 'time2vec', 'alibi'
