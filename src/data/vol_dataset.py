@@ -28,6 +28,7 @@ class TimeSeriesVolDataset(Dataset):
         split: str = "train",
         train_ratio: float = 0.7,
         val_ratio: float = 0.15,
+        indices: Optional[Tuple[int, int]] = None,
     ):
         super().__init__()
         assert split in {"train", "val", "test"}
@@ -38,20 +39,23 @@ class TimeSeriesVolDataset(Dataset):
         self.lookback = lookback
         self.horizon = horizon
 
-        n = len(self.df)
-        train_end, val_end = train_val_test_split_indices(
-            n, train_ratio=train_ratio, val_ratio=val_ratio
-        )
-
-        if split == "train":
-            self.start_idx = 0
-            self.end_idx = train_end
-        elif split == "val":
-            self.start_idx = train_end
-            self.end_idx = val_end
-        else:  # test
-            self.start_idx = val_end
-            self.end_idx = n
+        if indices is not None:
+            self.start_idx, self.end_idx = indices
+        else:
+            # Fallback to the old ratio logic if no explicit indices provided
+            n = len(self.df)
+            train_end, val_end = train_val_test_split_indices(
+                n, train_ratio=train_ratio, val_ratio=val_ratio
+            )
+            if split == "train":
+                self.start_idx = 0
+                self.end_idx = train_end
+            elif split == "val":
+                self.start_idx = train_end
+                self.end_idx = val_end
+            else:
+                self.start_idx = val_end
+                self.end_idx = n
 
         # Last usable index for constructing (X, y)
         self.max_shift = self.lookback + self.horizon - 1
