@@ -47,7 +47,7 @@ def main():
     parser = argparse.ArgumentParser()
     # This argument lets us run 3 different experiments with 1 script
     parser.add_argument("--embedding", type=str, default="sinusoidal", 
-                        choices=["sinusoidal", "learned", "time2vec", "alibi"],
+                        choices=["sinusoidal", "learned", "time2vec", "alibi", "ctlpe"],
                         help="Temporal embedding type to use")
     parser.add_argument("--epochs", type=int, default=50)
     args = parser.parse_args()

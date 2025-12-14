@@ -82,6 +82,44 @@ class Time2Vec(nn.Module):
         
         return torch.cat([v0, v1], dim=-1)
 
+class CTLPE(nn.Module):
+    """
+    Continuous Time Linear Positional Encoding.
+    From 'Learning Continuous Time Representations' literature.
+    
+    Formula: PE(t)_i = w_i * t + b_i
+    
+    This allows the model to learn a linear function of time for each
+    dimension of the d_model. Useful for capturing trends or decaying
+    importance over time.
+    """
+    def __init__(self, d_model: int):
+        super().__init__()
+        self.d_model = d_model
+        
+        # We learn a separate slope (w) and bias (b) for every dimension
+        # Shape: [1, 1, d_model] to broadcast over batch and sequence
+        self.w = nn.Parameter(torch.randn(1, 1, d_model))
+        self.b = nn.Parameter(torch.randn(1, 1, d_model))
+        
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        # Initialize with small values to prevent exploding gradients early on
+        nn.init.normal_(self.w, mean=0.0, std=0.02)
+        nn.init.zeros_(self.b)
+
+    def forward(self, t: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            t: [batch, seq_len, 1] - Continuous timestamps
+        Returns:
+            [batch, seq_len, d_model]
+        """
+        # t is [B, S, 1], w is [1, 1, D]. 
+        # Broadcasting logic: [B, S, 1] * [1, 1, D] -> [B, S, D]
+        return t * self.w + self.b
+
 def get_alibi_slope(num_heads: int) -> torch.Tensor:
     """
     Calculate the specific slope for each attention head.

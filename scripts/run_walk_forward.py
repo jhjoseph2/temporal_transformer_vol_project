@@ -19,7 +19,7 @@ logger = get_logger("walk_forward")
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--embedding", type=str, required=True, choices=["sinusoidal", "time2vec", "alibi"])
+    parser.add_argument("--embedding", type=str, required=True, choices=["sinusoidal", "time2vec", "alibi", "ctlpe"])
     parser.add_argument("--epochs", type=int, default=30) # Fewer epochs per fold usually needed
     args = parser.parse_args()
 

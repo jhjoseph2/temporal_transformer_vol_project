@@ -7,6 +7,7 @@ from .time_embeddings import (
     SinusoidalPositionalEncoding, 
     LearnedPositionalEncoding, 
     Time2Vec, 
+    CTLPE,
     get_alibi_bias
 )
 
@@ -38,6 +39,8 @@ class VolTransformer(nn.Module):
         elif self.embedding_type == 'time2vec':
             # Time2Vec maps 1 time feature -> d_model dims
             self.time_embedding = Time2Vec(d_model)
+        elif self.embedding_type == 'ctlpe':
+            self.time_embedding = CTLPE(d_model)
         # Note: ALiBi requires no registered embedding layer, it uses a dynamic mask
 
         # 3. The Transformer Encoder
@@ -72,7 +75,7 @@ class VolTransformer(nn.Module):
         elif self.embedding_type == 'learned':
             x_emb = self.time_embedding(x_emb)
             
-        elif self.embedding_type == 'time2vec':
+        elif self.embedding_type in ['time2vec', 'ctlpe']:
             # Create synthetic normalized time steps [0, 1] for the window
             # Shape: [batch, seq_len, 1]
             if t is None:
